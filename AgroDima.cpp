@@ -6,8 +6,36 @@ byte ip[] = {192,168,0,228};
 EthernetServer server(80);
 SdFat sd;
 File file;
+iBoardRF24 radio(3,8,5,6,7,2);
 const uint8_t SD_CS_PIN = SS;
 const uint8_t page = 1, static_data =2, path_starts=5;
+
+void initDB();
+
+// структура для приема данных с sensor Node
+typedef struct{
+  int ParamID;        // id
+  int ParamNAME;
+  float ParamT;         // ТЕмпература
+  float ParamP;    // влажность почвы
+  bool vcc;
+
+}
+SensorNode_OUT;
+
+SensorNode_OUT SN; //созжаем структуру
+
+
+//структура для отправки на miniBord
+typedef struct
+{
+    int RB_id; //id получателя
+    int id_OUT; // id servera
+    bool Srele_OUT; //состояния реле
+}
+miniRB_OUT;
+miniRB_OUT RB_IN;
+
 void setup()
 {
 #	ifdef DEBUG
@@ -27,10 +55,39 @@ void setup()
 	}
 #	ifdef DEBUG
 	//Serial.println("Free RAM = " + freeRam());
-	Serial.println("SD initialized!\nWaiting for clients");
+	Serial.println("SD initialized!\nInit DB...");
 #	endif
-
+	initDB();
+#	ifdef DEBUG
+	Serial.println("DB inited!\nWaiting for clients...");
+#	endif
 }
+
+void initDB() {
+	if(!sd.exists("DB")){
+		sd.mkdir("DB");
+	}
+}
+void initRadio() {
+#	ifdef DEBUG
+	Serial.println("Init radio...");
+#	endif
+	radio.begin();
+	radio.setDataRate(RF24_1MBPS); //выбор скорости
+	//radio.setDataRate(RF24_250KBPS);
+	radio.setPALevel(RF24_PA_MAX);
+	radio.setChannel(100); //тут установка канала
+	radio.setCRCLength(RF24_CRC_16);
+	radio.setRetries(15,15); //надо
+	radio.openWritingPipe(0xF0F0F0F0E1LL);
+	radio.openReadingPipe(1,0xF0F0F0F0D2LL);
+	radio.startListening();
+# 	ifdef DEBUG
+	Serial.println("Radio good.");
+#	endif
+}
+
+
 void readAndSendPage(EthernetClient &client, const char *name)  {
 	file = sd.open(name);
 #	ifdef DEBUG
@@ -110,9 +167,6 @@ void returnData(EthernetClient &client, String &query) {
 		query = "index.html";
 		client.println("Content-Type: text/html");
 		client.println("Connection: close");
-#		ifdef DEBUG
-		Serial.println("YEAH, BITCHES!");
-#		endif
 	}
 	client.println();
 	readAndSendPage(client, query.c_str());

@@ -13,6 +13,7 @@
 #include <Ethernet.h>
 #include <SPI.h>
 #include "SdFat.h"
+#include <iBoardRF24.h>
 //end of add your includes here
 #ifdef __cplusplus
 extern "C" {
