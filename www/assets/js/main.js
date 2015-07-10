@@ -110,3 +110,52 @@
 	});
 
 })(jQuery);
+(function($) {
+	document.getElementById("btn_add_node").addEventListener("click", function() {
+		f = document.getElementById("form_add_node");
+		if (f.style.visibility == "hidden")
+			f.style.visibility = "visible";
+		else
+			f.style.visibility = "hidden";
+
+	}, false);
+})(jQuery);
+(function addTo (dest, teg, content) {
+	var elem = document.createElement(teg);
+	elem.innerHTML = content;
+	dest.appendChild(elem);
+});
+(function($) {
+	document.getElementById("form_add_node").addEventListener("submit", function (evt) {
+	evt.preventDefault();
+	nocache = "&nocache" + Math.random() *1000000;
+	var request = new XMLHttpRequest();
+	var node_id = document.getElementById("node_id").value;
+	var node_name = document.getElementById("node_name").value;
+	var plant_name = document.getElementById("plant_name").value;
+	var node_type = document.getElementById("node_type").value;
+	request.onreadystatechange = function() {
+			if (this.readyState == 4 && 
+			this.status == 200 && 
+			this.responseText != null) {
+				var data = this.responseText;
+				if (data == "FUCKING INCREDIBLE MAGIC") {
+					table = getElementById("node_table");
+					var tr = document.createElement('tr');
+					addTo(tr, "th", node_id);
+					addTo(tr, "th", node_name);
+					addTo(tr, "th", plant_name);
+					addTo(tr, "th", node_type);
+					table.appendChild(tr);
+				} else {
+					alert("Случилась ошибка на арде. Это повод выпить!");
+				}
+			}
+	};
+	request.onerror = function() {
+		alert("Случилась ошибка сети. Это повод выпить!");
+	};
+	request.open("GET", "Sadd_node" + nocache + "&node_id="+node_id+"&node_name="+node_name+"&plant_name="+plant_name+"&node_type="+node_type, false);
+	request.send();
+}, false);
+})(jQuery);

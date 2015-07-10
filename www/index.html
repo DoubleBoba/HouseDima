@@ -68,7 +68,7 @@
                                     <h3>Настройки</h3>
 									<h3>Список узлов:</h3>
 									<p>Сдесь показаны все узлы, которые вам доступны</p>
-									<table>
+									<table id="node_table">
 											<tr>
 												<th>id</th>
 												<th>Названия узла</th>
@@ -84,16 +84,17 @@
 												<th>40</th>
 											</tr>	
 									</table>
-                                    <p><button class="button" id="btn_add_node">Добавить узел</button></p>
-                                    <form method="post" id="form_add_node">
+                                    <p><button class="button" id="btn_add_node">Меню добавления узла</button></p>
+
+                                    <form id="form_add_node" style="visibility: hidden;">
                                         <div class="row uniform">
-                                            <div class="6u 12u(xsmall)"><input type="number" name="id" id="id" placeholder="id узла" /></div>
-                                            <div class="6u 12u(xsmall)"><input type="name" name="name_sensor" id="name_sensor" placeholder="Имя узла" /></div>
+                                            <div class="6u 12u(xsmall)"><input type="number" name="id" id="node_id" placeholder="id узла"required /></div>
+                                            <div class="6u 12u(xsmall)"><input type="name" name="node_name" id="node_name" placeholder="Имя узла" required/></div>
                                         </div>
                                         <div class="row uniform">
-                                            <div class="6u 12u(xsmall)"><input type="name" name="name_plant" id="name_plant" placeholder="Имя растения" /></div>
-                                            <input type="radio" name="sensor_type" value="rele">Реле</input>
-                                            <input type="radio" name="sensor_type" value="sensor_node"Сенсорный узел</input>
+                                            <div class="6u 12u(xsmall)"><input type="name" name="plant_name" id="plant_name" placeholder="Имя растения" required/></div>
+                                            <div class="6u 12u(xsmall)"><input type="name" name="node_type" id="node_type" placeholder="Тип сенсора" required/></div>
+                                            <p><button type="submit"  id="node_send_btn" class="button">Отправить на сервер</button></p>
                                         </div>
                                     </form>
 
@@ -110,13 +111,6 @@
 												<th>Тип датчика</th>
 												<th>Показания</th>
 											</tr>
-											<tr><!-- test -->
-												<th>13231323d</th>
-												<th>Датчик влажности</th>
-												<th>Укроп</th>
-												<th>Sensor node</th>
-												<th>40</th>
-											</tr>	
 									</table>
 								</div>
 							</section>
