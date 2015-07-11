@@ -1,16 +1,18 @@
 // Do not remove the include below
 #include "AgroDima.h"
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEC };
-byte ip[] = {192,168,0,228};
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xF4, 0xEC };
+byte ip[] = {192,168,0,22};
 EthernetServer server(80);
+iBoardRF24 radio(3,8,5,6,7,2);
 SdFat sd;
 File file;
-iBoardRF24 radio(3,8,5,6,7,2);
+//iBoardRF24 radio(3,8,5,6,7,2);
 const uint8_t SD_CS_PIN = SS;
 const uint8_t page = 1, static_data =2, path_starts=5;
 
 void initDB();
+//void initRadio();
 
 // структура для приема данных с sensor Node
 typedef struct{
@@ -57,17 +59,36 @@ void setup()
 	//Serial.println("Free RAM = " + freeRam());
 	Serial.println("SD initialized!\nInit DB...");
 #	endif
-	initDB();
+	//initDB();
 #	ifdef DEBUG
-	Serial.println("DB inited!\nWaiting for clients...");
+	Serial.println("DB inited!");
+#	endif
+	//initRadio();
+#	ifdef DEBUG
+	Serial.println("Waiting for clients...");
 #	endif
 }
 
 void initDB() {
-	if(!sd.exists("DB")){
+	if(!sd.exists("DB"))
 		sd.mkdir("DB");
+
+	if(!sd.exists("DB/plants"))
+		sd.mkdir("DB/plants");
+	if(!sd.exists("DB/free_nodes"))
+		sd.mkdir("DB/free_nodes");
+
+}
+/*
+bool add_sensor_node(int id) {
+	String str = "/DB/free_nodes/";
+	str+= id;
+	if(!sd.exists(str.c_str())) {
+		sd.open();
 	}
 }
+*/
+
 void initRadio() {
 #	ifdef DEBUG
 	Serial.println("Init radio...");
@@ -154,7 +175,7 @@ void loop()
 	}
 }
 
-
+void addNode(EthernetClient &, String &);
 void returnData(EthernetClient &client, String &query) {
 	uint8_t br_pos = path_starts;
 	char c;
@@ -163,12 +184,21 @@ void returnData(EthernetClient &client, String &query) {
 	}
 	query = query.substring(path_starts, br_pos);
 	query.trim();
+	bool send_file = true;
 	if (query == "") {
 		query = "index.html";
 		client.println("Content-Type: text/html");
 		client.println("Connection: close");
+	}else if (query.indexOf(String("add_node")) > -1) {
+		addNode(client, query);
+		send_file = false;
 	}
 	client.println();
-	readAndSendPage(client, query.c_str());
+	if (send_file)
+		readAndSendPage(client, query.c_str());
 }
-
+void addNode(EthernetClient &client, String &query) {
+#	ifdef DEBUG
+	Serial.println("Adding node!");
+#	endif
+}
