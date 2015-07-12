@@ -12,7 +12,8 @@ const uint8_t SD_CS_PIN = SS;
 const uint8_t page = 1, static_data =2, path_starts=5;
 
 void initDB();
-//void initRadio();
+void nrf_sensor();
+void initRadio();
 
 // структура для приема данных с sensor Node
 typedef struct{
@@ -143,6 +144,7 @@ void returnData(EthernetClient &, String &);
 // The loop function is called in an endless loop
 void loop()
 {
+	nrf_sensor();
 	EthernetClient client = server.available();
 	if (client) {
 		boolean line_blank = true, new_line = false;
@@ -201,4 +203,28 @@ void addNode(EthernetClient &client, String &query) {
 #	ifdef DEBUG
 	Serial.println("Adding node!");
 #	endif
+}
+
+void nrf_sensor()
+{
+	if (radio.available()) 
+  		{
+    		radio.read( &SN, sizeof(SN)); 
+#			ifdef DEBUG
+				 Serial.println( SN.ParamID);
+		         Serial.println( SN.ParamNAME);
+		         Serial.println( SN.ParamT);
+		         Serial.println( SN.ParamP);
+		         Serial.println( SN.vcc);		   
+#			endif
+    	}
+}
+
+void RBord_IN(bool Srele,int RB_id_client)
+{
+  radio.stopListening();
+  RB_IN.Srele_OUT=Srele;
+  RB_IN.RB_id=RB_id_client;
+  bool ok = radio.write( &RB_IN, sizeof(RB_IN)); //Отправка данных структуры
+  radio.startListening();
 }
