@@ -7,15 +7,14 @@
 #ifndef _AgroDima_H_
 #define _AgroDima_H_
 #include "Arduino.h"
-#define DEBUG
-#define BUFFER_SIZE 256
-//add your includes for the project AgroDima here
 #include <Ethernet.h>
 #include <SPI.h>
 #include "SdFat.h"
 #include <iBoardRF24.h>
 #include "AgroDB.h"
 #include <digitalWriteFast.h>
+//add your includes for the project AgroDima here
+#include "public_defs.h"
 //end of add your includes here
 #ifdef __cplusplus
 extern "C" {

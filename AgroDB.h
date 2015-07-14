@@ -7,16 +7,29 @@
 
 #ifndef AGRODB_H_
 #define AGRODB_H_
-
-enum nodeType {
-	sensor_node = 0,
-	rele = 1
-};
+#include <Arduino.h>
+#include <SdFat.h>
+#include <Ethernet.h>
+#include <SPI.h>
+#include "SdFat.h"
+#include <iBoardRF24.h>
+#include "AgroDB.h"
+#include <digitalWriteFast.h>
+#include <public_defs.h>
 
 class AgroDB {
-
+private:
+	String rootDir;
+	SdFat *sd;
+	File file;
+	/*
+	 * This functions only add a data to DB (sd card)!
+	 * Its calling from public methods.
+	 */
+	bool addNode(int id, NodeType type);
+	bool addSensor(int id, int nodeId, char *name);
 public:
-	AgroDB(SdFat *sd, String &rootDir);
+	AgroDB(SdFat *sd, String &rootDir, File &file);
 	AgroDB(SdFat *sd);
 	~AgroDB();
 	/*
@@ -30,15 +43,11 @@ public:
 	bool removeSensor(char *query);
 	bool assignSensor(int sensorId, int plantId);
 	bool deattachSensor(int sensorId);
-private:
-	String rootDir;
-	SdFat *sd;
-	/*
-	 * This functions only add a data to DB (sd card)!
-	 * Its calling from public methods.
-	 */
-	bool addNode(int id, nodeType type);
-	bool addSensor(int id, int nodeId, char *name);
+	Plant getPlant(int id);
+	SensorNode_OUT getSensorNode(int id);
+	miniRB_OUT getRele(int id);
+	//auto getAllPlants();
+
 
 };
 

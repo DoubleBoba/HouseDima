@@ -1,6 +1,5 @@
 // Do not remove the include below
 #include "AgroDima.h"
-
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xF4, 0xEC };
 byte ip[] = {192,168,0,22};
 EthernetServer server(80);
@@ -15,29 +14,7 @@ void initDB();
 void nrf_sensor();
 void initRadio();
 
-// структура для приема данных с sensor Node
-typedef struct{
-  int ParamID;        // id
-  int ParamNAME;
-  float ParamT;         // ТЕмпература
-  float ParamP;    // влажность почвы
-  bool vcc;
 
-}
-SensorNode_OUT;
-
-SensorNode_OUT SN; //созжаем структуру
-
-
-//структура для отправки на miniBord
-typedef struct
-{
-    int RB_id; //id получателя
-    int id_OUT; // id servera
-    bool Srele_OUT; //состояния реле
-}
-miniRB_OUT;
-miniRB_OUT RB_IN;
 
 void setup()
 {
@@ -209,13 +186,13 @@ void nrf_sensor()
 {
 	if (radio.available()) 
   		{
-    		radio.read( &SN, sizeof(SN)); 
+    		radio.read( &sensorNode, sizeof(sensorNode)); 
 #			ifdef DEBUG
-				 Serial.println( SN.ParamID);
-		         Serial.println( SN.ParamNAME);
-		         Serial.println( SN.ParamT);
-		         Serial.println( SN.ParamP);
-		         Serial.println( SN.vcc);		   
+				 Serial.println( sensorNode.ParamID);
+		         Serial.println( sensorNode.ParamNAME);
+		         Serial.println( sensorNode.ParamT);
+		         Serial.println( sensorNode.ParamP);
+		         Serial.println( sensorNode.vcc);		   
 #			endif
     	}
 }
@@ -223,8 +200,8 @@ void nrf_sensor()
 void RBord_IN(bool Srele,int RB_id_client)
 {
   radio.stopListening();
-  RB_IN.Srele_OUT=Srele;
-  RB_IN.RB_id=RB_id_client;
-  bool ok = radio.write( &RB_IN, sizeof(RB_IN)); //Отправка данных структуры
+  miniRb.Srele_OUT=Srele;
+  miniRb.RB_id=RB_id_client;
+  bool ok = radio.write( &miniRb, sizeof(miniRb)); //Отправка данных структуры
   radio.startListening();
 }
