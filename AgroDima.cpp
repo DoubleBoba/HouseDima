@@ -14,6 +14,14 @@ const uint8_t page = 1, static_data =2, path_starts=5;
 void initDB();
 void nrf_sensor();
 void initRadio();
+void processReles();
+
+int target1 = -1, target2 = -1, target3 = -1; // Показания для включения реле
+int time1 = -1, time2 = -1, time3 = -1; //Промежутки времени между включениями реле
+int duration1 = -1, duration2 = -1, duration3 =-1; //Продолжительность включения реле
+int sensor1 = -1, sensor2 = -1, sensor3 = -1;
+unsigned long last1 = millis(), last2 = millis(), last3 = millis(); //Промежутки времени между включениями реле
+
 
 // структура для приема данных с sensor Node
 typedef struct{
@@ -22,8 +30,8 @@ typedef struct{
   float ParamT;         // ТЕмпература
   float ParamP;    // влажность почвы
   bool vcc;
-
 }
+
 SensorNode_OUT;
 
 SensorNode_OUT SN; //созжаем структуру
@@ -38,6 +46,8 @@ typedef struct
 }
 miniRB_OUT;
 miniRB_OUT RB_IN;
+
+
 
 void setup()
 {
@@ -144,6 +154,7 @@ void returnData(EthernetClient &, String &);
 // The loop function is called in an endless loop
 void loop()
 {
+
 	nrf_sensor();
 	EthernetClient client = server.available();
 	if (client) {
@@ -175,9 +186,10 @@ void loop()
 		file.close();
 		client.stop();
 	}
+	processReles();
 }
 
-void addNode(EthernetClient &, String &);
+void processQuery(EthernetClient &, String &);
 void returnData(EthernetClient &client, String &query) {
 	uint8_t br_pos = path_starts;
 	char c;
@@ -191,18 +203,47 @@ void returnData(EthernetClient &client, String &query) {
 		query = "index.html";
 		client.println("Content-Type: text/html");
 		client.println("Connection: close");
-	}else if (query.indexOf(String("add_node")) > -1) {
-		addNode(client, query);
+	}else if (query.indexOf(String("ajax")) > -1) {
 		send_file = false;
+		if (query.indexOf("query")>-1) {
+			processQuery(client, query);
+		}
 	}
 	client.println();
 	if (send_file)
 		readAndSendPage(client, query.c_str());
 }
-void addNode(EthernetClient &client, String &query) {
+
+void processQuery(EthernetClient &client, String &query) {
 #	ifdef DEBUG
-	Serial.println("Adding node!");
+	Serial.println("Processing query");
 #	endif
+
+	query = query.remove(0, query.indexOf("&")+1);
+	query = query.remove(0, query.indexOf("&")+1);
+
+	target1 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
+	query.remove(0, indexOf('&')+1);
+	target2 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
+	query.remove(0, indexOf('&')+1);
+	target3 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
+	query.remove(0, indexOf('&')+1);
+
+	time1 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
+	query.remove(0, indexOf('&')+1);
+	time2 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
+	query.remove(0, indexOf('&')+1);
+	time3 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
+	query.remove(0, indexOf('&')+1);
+
+	duration1 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
+	query.remove(0, indexOf('&')+1);
+	duration1 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
+	query.remove(0, indexOf('&')+1);
+	duration1 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
+	query.remove(0, indexOf('&')+1);
+
+	client.println("FUCKING INCREDIBLE MAGIC");
 }
 
 void nrf_sensor()
@@ -211,15 +252,42 @@ void nrf_sensor()
   		{
     		radio.read( &SN, sizeof(SN)); 
 #			ifdef DEBUG
-				 Serial.println( SN.ParamID);
-		         Serial.println( SN.ParamNAME);
-		         Serial.println( SN.ParamT);
-		         Serial.println( SN.ParamP);
-		         Serial.println( SN.vcc);		   
+    		Serial.println("Sensor Node send a packet:")
+			Serial.println( SN.ParamID);
+			Serial.println( SN.ParamNAME);
+			Serial.println( SN.ParamT);
+			Serial.println( SN.ParamP);
+			Serial.println( SN.vcc);
+			Serial.println("End of packet!");
 #			endif
+			sensor1 = SN.paramT;
+			sensor2 = SN.ParamP;
+			sensor3 = SN.vcc;
+
     	}
 }
 
+void processReles() {
+	if (sensor1 >target1 || millis() - last1 > time1){
+		RBord_IN(true, RELE1);
+	}else if (millis() - duration > time1){
+		RBord_IN(false, RELE1);
+	}
+	if (sensor2 >target2 || millis() - last2 > time2){
+		RBord_IN(true, RELE2);
+	}else if (millis() - duration > time2){
+		RBord_IN(false, RELE2);
+	}
+	if (sensor3 >target3 || millis() - last3 > time3){
+			RBord_IN(true, RELE3);
+	}else if (millis() - duration > time3){
+		RBord_IN(false, RELE3);
+	}
+
+}
+/**
+ * Set rele status
+ */
 void RBord_IN(bool Srele,int RB_id_client)
 {
   radio.stopListening();

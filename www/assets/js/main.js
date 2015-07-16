@@ -110,6 +110,7 @@
 	});
 
 })(jQuery);
+/*
 (function($) {
 	document.getElementById("btn_add_node").addEventListener("click", function() {
 		f = document.getElementById("form_add_node");
@@ -125,6 +126,7 @@
 	elem.innerHTML = content;
 	dest.appendChild(elem);
 });
+
 (function($) {
 	document.getElementById("form_add_node").addEventListener("submit", function (evt) {
 	evt.preventDefault();
@@ -156,6 +158,48 @@
 		alert("Случилась ошибка сети. Это повод выпить!");
 	};
 	request.open("GET", "Sadd_node" + nocache + "&node_id="+node_id+"&node_name="+node_name+"&plant_name="+plant_name+"&node_type="+node_type, false);
+	request.send();
+}, false);
+})(jQuery);
+*/
+
+(function($) {
+	fields = ["t", "t", "d"]
+	document.getElementById("form_add_node").addEventListener("submit", function (evt) {
+	evt.preventDefault();
+	nocache = "&nocache" + Math.random() *1000000;
+	var request = new XMLHttpRequest();
+	form = document.getElementById("form_add_node");
+	divs = form.getElementsByTagName("div");
+	arr = [];
+	for (i = 0; i < 3; i++){
+		arr.push([]);
+		for (j = 0; j < 3; j++) {
+			arr[i].push(divs[j].getElementsByTagName("input")[0].value);
+		}
+	}
+	request.onreadystatechange = function() {
+			if (this.readyState == 4 && 
+			this.status == 200 && 
+			this.responseText != null) {
+				var data = this.responseText;
+				if (data == "FUCKING INCREDIBLE MAGIC") {
+					alert("ДА!")
+				}
+	};
+}
+	request.onerror = function() {
+		alert("Случилась ошибка сети. Это повод выпить!");
+	};
+	req = "Sadd_node" + nocache;
+	for (i = 0; i < 3; i++){
+		for (j = 0; j < 3; j++) {
+			req += "&" + fields[i] + i + "=" + arr[j][i];
+		}
+	} 
+	req += "&";
+	alert(req);
+	request.open("GET", req, false);
 	request.send();
 }, false);
 })(jQuery);
