@@ -66,36 +66,25 @@
 							<section id="two">
 								<div class="container">
                                     <h3>Настройки</h3>
-									<h3>Список узлов:</h3>
-									<p>Сдесь показаны все узлы, которые вам доступны</p>
-									<table id="node_table">
-											<tr>
-												<th>id</th>
-												<th>Названия узла</th>
-												<th>Название растения</th>
-												<th>Тип узлв</th>
-												<th>Показания</th>
-											</tr>
-											<tr><!-- test -->
-												<th>13231323d</th>
-												<th>Угол возле дома</th>
-												<th>Укроп</th>
-												<th>Sensor node</th>
-												<th>40</th>
-											</tr>	
-									</table>
-                                    <p><button class="button" id="btn_add_node">Меню добавления узла</button></p>
+									
 
-                                    <form id="form_add_node" style="visibility: hidden;">
+                                    <form id="form_add_node">
                                         <div class="row uniform">
-                                            <div class="6u 12u(xsmall)"><input type="number" name="id" id="node_id" placeholder="id узла"required /></div>
-                                            <div class="6u 12u(xsmall)"><input type="name" name="node_name" id="node_name" placeholder="Имя узла" required/></div>
+                                            <div class="6u 12u(xsmall)"><input type="number" name="id" id="s1" placeholder="Плказания сенсора для реле 1"required /></div>
+                                            <div class="6u 12u(xsmall)"><input type="name" name="node_name" id="d1" placeholder="Продолжительность работы для реле 1" required/></div>
+                                            <div class="6u 12u(xsmall)"><input type="name" name="node_name" id="t1" placeholder="Интервал включения для реле 1" required/></div>
                                         </div>
                                         <div class="row uniform">
-                                            <div class="6u 12u(xsmall)"><input type="name" name="plant_name" id="plant_name" placeholder="Имя растения" required/></div>
-                                            <div class="6u 12u(xsmall)"><input type="name" name="node_type" id="node_type" placeholder="Тип сенсора" required/></div>
-                                            <p><button type="submit"  id="node_send_btn" class="button">Отправить на сервер</button></p>
+                                            <div class="6u 12u(xsmall)"><input type="number" name="id" id="s2" placeholder="Плказания сенсора для реле 2"required /></div>
+                                            <div class="6u 12u(xsmall)"><input type="name" name="node_name" id="d2" placeholder="Продолжительность работы для реле 2" required/></div>
+                                            <div class="6u 12u(xsmall)"><input type="name" name="node_name" id="t2" placeholder="Интервал включения для реле 2" required/></div>
                                         </div>
+                                        <div class="row uniform">
+                                            <div class="6u 12u(xsmall)"><input type="number" name="id" id="s3" placeholder="Плказания сенсора для реле 3"required /></div>
+                                            <div class="6u 12u(xsmall)"><input type="name" name="node_name" id="d3" placeholder="Продолжительность работы для реле 3" required/></div>
+                                            <div class="6u 12u(xsmall)"><input type="name" name="node_name" id="t3" placeholder="Интервал включения для реле 3" required/></div>
+                                        </div>
+                                        <p><button type="submit"  id="node_send_btn" class="button">Отправить на сервер</button></p>
                                     </form>
 
 
