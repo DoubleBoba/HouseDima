@@ -15,12 +15,14 @@ void initDB();
 void nrf_sensor();
 void initRadio();
 void processReles();
+void RBord_IN(bool, int);
 
-int target1 = -1, target2 = -1, target3 = -1; // Показания для включения реле
-int time1 = -1, time2 = -1, time3 = -1; //Промежутки времени между включениями реле
-int duration1 = -1, duration2 = -1, duration3 =-1; //Продолжительность включения реле
-int sensor1 = -1, sensor2 = -1, sensor3 = -1;
-unsigned long last1 = millis(), last2 = millis(), last3 = millis(); //Промежутки времени между включениями реле
+int targets[] = {-1, -1, -1, -1}; // Показания для включения реле
+int times[] = {-1, -1, -1, -1}; //Промежутки времени между включениями реле
+int durations[] = {-1, -1, -1, -1}; //Продолжительность включения реле
+int sensors[] = {-1, -1, -1, -1};
+int reles_ids[] = RELES_IDS;
+unsigned long lasts[] = {millis(),  millis(), millis(), millis()}; //Промежутки времени между включениями реле
 
 
 // структура для приема данных с sensor Node
@@ -214,34 +216,24 @@ void returnData(EthernetClient &client, String &query) {
 		readAndSendPage(client, query.c_str());
 }
 
+void parseQueryToArr(int * arr, String &query) {
+	for (int i = 0; i < 4; i++) {
+		*(arr + i) = atoi(query.substring(query.indexOf('=')+1, query.indexOf("&")-1).c_str());
+		query.remove(0, query.indexOf("&") + 1);
+	}
+}
+
 void processQuery(EthernetClient &client, String &query) {
 #	ifdef DEBUG
 	Serial.println("Processing query");
 #	endif
 
-	query = query.remove(0, query.indexOf("&")+1);
-	query = query.remove(0, query.indexOf("&")+1);
+	query.remove(0, query.indexOf("&")+1);
+	query.remove(0, query.indexOf("&")+1);
 
-	target1 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
-	query.remove(0, indexOf('&')+1);
-	target2 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
-	query.remove(0, indexOf('&')+1);
-	target3 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
-	query.remove(0, indexOf('&')+1);
-
-	time1 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
-	query.remove(0, indexOf('&')+1);
-	time2 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
-	query.remove(0, indexOf('&')+1);
-	time3 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
-	query.remove(0, indexOf('&')+1);
-
-	duration1 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
-	query.remove(0, indexOf('&')+1);
-	duration1 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
-	query.remove(0, indexOf('&')+1);
-	duration1 = atoi(query.indexOf('=')+1, query. indexOf('&')-1);
-	query.remove(0, indexOf('&')+1);
+	parseQueryToArr(targets, query);
+	parseQueryToArr(times, query);
+	parseQueryToArr(durations, query);
 
 	client.println("FUCKING INCREDIBLE MAGIC");
 }
@@ -252,7 +244,7 @@ void nrf_sensor()
   		{
     		radio.read( &SN, sizeof(SN)); 
 #			ifdef DEBUG
-    		Serial.println("Sensor Node send a packet:")
+    		Serial.println("Sensor Node send a packet:");
 			Serial.println( SN.ParamID);
 			Serial.println( SN.ParamNAME);
 			Serial.println( SN.ParamT);
@@ -260,28 +252,24 @@ void nrf_sensor()
 			Serial.println( SN.vcc);
 			Serial.println("End of packet!");
 #			endif
-			sensor1 = SN.paramT;
-			sensor2 = SN.ParamP;
-			sensor3 = SN.vcc;
+			sensors[0] = SN.ParamP;
+			sensors[1] = SN.ParamT;
+			sensors[2] = SN.vcc;
 
     	}
 }
 
 void processReles() {
-	if (sensor1 >target1 || millis() - last1 > time1){
-		RBord_IN(true, RELE1);
-	}else if (millis() - duration > time1){
-		RBord_IN(false, RELE1);
-	}
-	if (sensor2 >target2 || millis() - last2 > time2){
-		RBord_IN(true, RELE2);
-	}else if (millis() - duration > time2){
-		RBord_IN(false, RELE2);
-	}
-	if (sensor3 >target3 || millis() - last3 > time3){
-			RBord_IN(true, RELE3);
-	}else if (millis() - duration > time3){
-		RBord_IN(false, RELE3);
+	for (int i = 0; i < 4; i++) {
+		if (*(sensors + i) > *(targets + i)
+				||
+				millis() - *(lasts + i) > *(times+1)){
+			RBord_IN(true, *(reles_ids+i));
+			*(lasts + 1) = millis();
+		}else if (millis()-*(lasts+i) > *(durations+i)) {
+			RBord_IN(false, *(reles_ids + i));
+			*(lasts+i) = millis();
+		}
 	}
 
 }

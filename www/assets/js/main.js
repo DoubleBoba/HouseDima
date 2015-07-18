@@ -164,7 +164,7 @@
 */
 
 (function($) {
-	fields = ["t", "t", "d"]
+	fields = ["s", "t", "d"]
 	document.getElementById("form_add_node").addEventListener("submit", function (evt) {
 	evt.preventDefault();
 	nocache = "&nocache" + Math.random() *1000000;
