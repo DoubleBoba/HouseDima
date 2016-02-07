@@ -2,7 +2,7 @@
 #include "AgroDima.h"
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xF4, 0xEC };
-byte ip[] = {192,168,0,22};
+byte ip[] = {192,168,0,122};
 EthernetServer server(80);
 iBoardRF24 radio(3,8,5,6,7,2);
 SdFat sd;
@@ -11,19 +11,16 @@ File file;
 const uint8_t SD_CS_PIN = SS;
 const uint8_t page = 1, static_data =2, path_starts=5;
 
-void initDB();
 void nrf_sensor();
 void initRadio();
-void processReles();
 void RBord_IN(bool, int);
 
-int targets[] = {-1, -1, -1, -1}; // Показания для включения реле
-int times[] = {-1, -1, -1, -1}; //Промежутки времени между включениями реле
-int durations[] = {-1, -1, -1, -1}; //Продолжительность включения реле
-int sensors[] = {-1, -1, -1, -1};
-int reles_ids[] = RELES_IDS;
-unsigned long lasts[] = {millis(),  millis(), millis(), millis()}; //Промежутки времени между включениями реле
+struct Rele {
+	uint8_t pin;
+	bool status;
+};
 
+Rele reles[] = {{9, false}, {8, false}, {7, false}, {0, false}};
 
 // структура для приема данных с sensor Node
 typedef struct{
@@ -55,7 +52,7 @@ void setup()
 {
 #	ifdef DEBUG
 	Serial.begin(9600);
-	Serial.println("Welcome to the Agro Dima project\nIt was compiled in DEBUG mode\nStarting web server...");
+	Serial.println("Welcome to the Agro Dima project\nIt was compiled in DEBUG mode\nStarting web server... YES");
 #	endif
 	Ethernet.begin(mac,ip);
 	server.begin();
@@ -68,39 +65,14 @@ void setup()
 #		endif
 		while (1);
 	}
+	initRadio();
 #	ifdef DEBUG
-	//Serial.println("Free RAM = " + freeRam());
-	Serial.println("SD initialized!\nInit DB...");
-#	endif
-	//initDB();
-#	ifdef DEBUG
-	Serial.println("DB inited!");
-#	endif
-	//initRadio();
-#	ifdef DEBUG
+//	Serial.println(freeMemory());
 	Serial.println("Waiting for clients...");
 #	endif
+	RBord_IN(true, 1);
 }
 
-void initDB() {
-	if(!sd.exists("DB"))
-		sd.mkdir("DB");
-
-	if(!sd.exists("DB/plants"))
-		sd.mkdir("DB/plants");
-	if(!sd.exists("DB/free_nodes"))
-		sd.mkdir("DB/free_nodes");
-
-}
-/*
-bool add_sensor_node(int id) {
-	String str = "/DB/free_nodes/";
-	str+= id;
-	if(!sd.exists(str.c_str())) {
-		sd.open();
-	}
-}
-*/
 
 void initRadio() {
 #	ifdef DEBUG
@@ -156,8 +128,6 @@ void returnData(EthernetClient &, String &);
 // The loop function is called in an endless loop
 void loop()
 {
-
-	nrf_sensor();
 	EthernetClient client = server.available();
 	if (client) {
 		boolean line_blank = true, new_line = false;
@@ -188,27 +158,37 @@ void loop()
 		file.close();
 		client.stop();
 	}
-	processReles();
+//	processReles();
 }
-
-void processQuery(EthernetClient &, String &);
+void toggleStatus(EthernetClient &, String &);
+void returnStatus(EthernetClient &, String &);
 void returnData(EthernetClient &client, String &query) {
 	uint8_t br_pos = path_starts;
 	char c;
 	while(c != ' ') {
 		c = query.charAt(br_pos++);
+		Serial.print(c);
 	}
-	query = query.substring(path_starts, br_pos);
-	query.trim();
+	query.remove(0, path_starts);
+	query.remove(br_pos-path_starts, 9);
 	bool send_file = true;
+#	ifdef DEBUG
+	Serial.println(query);
+#	endif
+	query.trim();
 	if (query == "") {
 		query = "index.html";
 		client.println("Content-Type: text/html");
 		client.println("Connection: close");
-	}else if (query.indexOf(String("ajax")) > -1) {
+	}else if (query.indexOf("ajax") > -1) {
 		send_file = false;
-		if (query.indexOf("query")>-1) {
-			processQuery(client, query);
+		if (query.indexOf("GET_S")>-1) {
+#			ifdef DEBUG
+			Serial.println("YES MOTHERFUCKER");
+#			endif
+			returnStatus(client, query);
+		} else if (query.indexOf("SET_S")) {
+			toggleStatus(client, query);
 		}
 	}
 	client.println();
@@ -216,63 +196,41 @@ void returnData(EthernetClient &client, String &query) {
 		readAndSendPage(client, query.c_str());
 }
 
-void parseQueryToArr(int * arr, String &query) {
-	for (int i = 0; i < 4; i++) {
-		*(arr + i) = atoi(query.substring(query.indexOf('=')+1, query.indexOf("&")-1).c_str());
-		query.remove(0, query.indexOf("&") + 1);
-	}
-}
 
-void processQuery(EthernetClient &client, String &query) {
+void returnStatus(EthernetClient &client, String &query) {
 #	ifdef DEBUG
 	Serial.println("Processing query");
 #	endif
 
-	query.remove(0, query.indexOf("&")+1);
-	query.remove(0, query.indexOf("&")+1);
+	String result = "";
 
-	parseQueryToArr(targets, query);
-	parseQueryToArr(times, query);
-	parseQueryToArr(durations, query);
-
-	client.println("FUCKING INCREDIBLE MAGIC");
-}
-
-void nrf_sensor()
-{
-	if (radio.available()) 
-  		{
-    		radio.read( &SN, sizeof(SN)); 
-#			ifdef DEBUG
-    		Serial.println("Sensor Node send a packet:");
-			Serial.println( SN.ParamID);
-			Serial.println( SN.ParamNAME);
-			Serial.println( SN.ParamT);
-			Serial.println( SN.ParamP);
-			Serial.println( SN.vcc);
-			Serial.println("End of packet!");
-#			endif
-			sensors[0] = SN.ParamP;
-			sensors[1] = SN.ParamT;
-			sensors[2] = SN.vcc;
-
-    	}
-}
-
-void processReles() {
 	for (int i = 0; i < 4; i++) {
-		if (*(sensors + i) > *(targets + i)
-				||
-				millis() - *(lasts + i) > *(times+1)){
-			RBord_IN(true, *(reles_ids+i));
-			*(lasts + 1) = millis();
-		}else if (millis()-*(lasts+i) > *(durations+i)) {
-			RBord_IN(false, *(reles_ids + i));
-			*(lasts+i) = millis();
+		result = result + reles[i].pin + ":" + ((reles[i].status) ? 1 : 0) += ";";
+	}
+#	ifdef DEBUG
+	Serial.println("Status: "+result);
+#	endif
+	client.println(result);
+}
+
+void toggleStatus(EthernetClient &client, String &query) {
+	uint8_t num = atoi(query.charAt(query.length()-1)+"\n");
+#	ifdef DEBUG
+	Serial.print("Toggle ");
+	Serial.println(num);
+#	endif
+	if (!(num > 3 && num < 0)) {
+		Rele r = reles[num];
+		if (num != 3) {
+			(r.status) ? digitalWrite(r.pin, LOW) : digitalWrite(r.pin, HIGH);
+			r.status = !r.status;
+		} else {
+			RBord_IN(!r.status, 21);
+			r.status = !r.status;
 		}
 	}
-
 }
+
 /**
  * Set rele status
  */

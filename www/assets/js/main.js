@@ -191,7 +191,7 @@
 	request.onerror = function() {
 		alert("Случилась ошибка сети. Это повод выпить!");
 	};
-	req = "Sadd_node" + nocache;
+	req = "ajax_query" + nocache;
 	for (i = 0; i < 3; i++){
 		for (j = 0; j < 3; j++) {
 			req += "&" + fields[i] + i + "=" + arr[j][i];
