@@ -13,6 +13,7 @@ const uint8_t page = 1, static_data =2, path_starts=5;
 
 void nrf_sensor();
 void initRadio();
+<<<<<<< HEAD
 void RBord_IN(bool, int);
 
 struct Rele {
@@ -158,8 +159,9 @@ void loop()
 		file.close();
 		client.stop();
 	}
-//	processReles();
+
 }
+
 void toggleStatus(EthernetClient &, String &);
 void returnStatus(EthernetClient &, String &);
 void returnData(EthernetClient &client, String &query) {
@@ -189,6 +191,7 @@ void returnData(EthernetClient &client, String &query) {
 			returnStatus(client, query);
 		} else if (query.indexOf("SET_S")) {
 			toggleStatus(client, query);
+
 		}
 	}
 	client.println();
@@ -196,11 +199,7 @@ void returnData(EthernetClient &client, String &query) {
 		readAndSendPage(client, query.c_str());
 }
 
-
 void returnStatus(EthernetClient &client, String &query) {
-#	ifdef DEBUG
-	Serial.println("Processing query");
-#	endif
 
 	String result = "";
 
@@ -231,7 +230,6 @@ void toggleStatus(EthernetClient &client, String &query) {
 		}
 	}
 }
-
 /**
  * Set rele status
  */
