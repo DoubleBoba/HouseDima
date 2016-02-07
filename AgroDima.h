@@ -13,13 +13,13 @@
 #include <Ethernet.h>
 #include <SPI.h>
 #include <SdFat.h>
-//#include <iBoardRF24.h> // FIXME
-//#include <digitalWriteFast.h> // FIXME
+#include <iBoardRF24.h>
+#include <digitalWriteFast.h>
+#include <MemoryFree.h>
 //end of add your includes here
+
 // Аёдишники реле и нодов
-#define RELE1 1
-#define RELE2 2
-#define RELE3 3
+#define RELES_IDS {1,2,3,4}
 
 #define NODE 4
 
