@@ -214,7 +214,8 @@ void returnStatus(EthernetClient &client, String &query) {
 }
 
 void toggleStatus(EthernetClient &client, String &query) {
-	uint8_t num = atoi(query.charAt(query.length()-1)+"\n");
+	char chs[] = {query.charAt(query.length()-1)};
+	uint8_t num = atoi(chs);
 #	ifdef DEBUG
 	Serial.print("Toggle ");
 	Serial.println(num);
